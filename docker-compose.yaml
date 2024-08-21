@@ -1,42 +1,18 @@
-version: "3"
-
-networks:
-  gitea:
-    external: false
-
 services:
-  server:
-    image: gitea/gitea:latest
-    container_name: gitea
-    environment:
-      - USER_UID=1000
-      - USER_GID=1000
-      - GITEA__database__DB_TYPE=postgres
-      - GITEA__database__HOST=db:5432
-      - GITEA__database__NAME=gitea
-      - GITEA__database__USER=MrSpidy616
-      - GITEA__database__PASSWD=Spidy69
-    restart: always
-    networks:
-      - gitea
-    volumes:
-      - ./gitea:/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
     ports:
-      - "3000:3000"
-      - "222:22"
-    depends_on:
-      - db
-
-  db:
-    image: postgres:14
-    restart: always
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
+      - "80:80/tcp"
     environment:
-      - POSTGRES_USER=gitea
-      - POSTGRES_PASSWORD=MrSpidy616
-      - POSTGRES_DB=Spidy69
-    networks:
-      - gitea
+      TZ: 'America/Chicago'
+      WEBPASSWORD: 'Spidy616'
     volumes:
-      - ./postgres:/var/lib/postgresql/data
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
